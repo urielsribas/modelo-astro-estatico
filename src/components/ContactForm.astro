@@ -1,0 +1,112 @@
+---
+/**
+ * Formulário de contato. Envia JSON para site.formWebhook (ex.: webhook do GHL).
+ * Campos extras: passe pelo slot "fields" usando <label class="field">.
+ * Sem webhook configurado, mostra um aviso no lugar do formulário.
+ */
+import { site } from "@/site.config";
+import Button from "@/components/Button.astro";
+
+interface Props { submitLabel?: string; successMessage?: string; source?: string }
+const {
+  submitLabel = "Enviar mensagem",
+  successMessage = "Mensagem enviada. Vamos responder em breve.",
+  source = "site",
+} = Astro.props;
+const webhook = site.formWebhook;
+---
+
+{webhook ? (
+  <form class="form" data-contact-form data-webhook={webhook} data-source={source} novalidate>
+    <label class="field">
+      <span>Nome</span>
+      <input name="name" type="text" autocomplete="name" required />
+    </label>
+    <label class="field">
+      <span>WhatsApp</span>
+      <input name="phone" type="tel" autocomplete="tel" inputmode="tel" required pattern="[\d\s()+-]{10,}" />
+    </label>
+    <label class="field">
+      <span>E-mail (opcional)</span>
+      <input name="email" type="email" autocomplete="email" />
+    </label>
+    <slot name="fields" />
+    <label class="field">
+      <span>Mensagem</span>
+      <textarea name="message" rows="4"></textarea>
+    </label>
+    <!-- Honeypot anti-spam -->
+    <input type="text" name="website" tabindex="-1" autocomplete="off" class="sr-only" aria-hidden="true" />
+    <Button type="submit" variant="primary">{submitLabel}</Button>
+    <p class="form__status" role="status" aria-live="polite" data-success={successMessage}></p>
+  </form>
+) : (
+  <p class="form__disabled">[PREENCHER: formWebhook em site.config.ts para ativar o formulário]</p>
+)}
+
+<style>
+  .form { display: grid; gap: var(--space-4); max-width: 560px; }
+  .field { display: grid; gap: var(--space-1); font-size: var(--text-sm); font-weight: 600; }
+  .field input, .field textarea, .field select {
+    width: 100%; padding: var(--space-3); font-weight: 400; font-size: var(--text-base);
+    border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-bg);
+    transition: border-color var(--dur-fast);
+  }
+  .field input:focus, .field textarea:focus { border-color: var(--color-primary); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 25%, transparent); }
+  .field [aria-invalid="true"] { border-color: var(--color-error); }
+  .form__status { min-height: 1.5em; font-size: var(--text-sm); }
+  .form__status.is-success { color: var(--color-success); }
+  .form__status.is-error { color: var(--color-error); }
+  .form__disabled { padding: var(--space-4); border: 1px dashed var(--color-border); border-radius: var(--radius); color: var(--color-muted); }
+</style>
+
+<script>
+  import { track } from "@/scripts/tracking";
+
+  document.querySelectorAll<HTMLFormElement>("[data-contact-form]").forEach((form) => {
+    const status = form.querySelector<HTMLElement>(".form__status")!;
+    const button = form.querySelector<HTMLButtonElement>("button[type=submit]")!;
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      status.className = "form__status";
+      status.textContent = "";
+
+      let firstInvalid: HTMLElement | null = null;
+      form.querySelectorAll<HTMLInputElement>("input, textarea, select").forEach((el) => {
+        const ok = el.checkValidity();
+        el.setAttribute("aria-invalid", String(!ok));
+        if (!ok && !firstInvalid) firstInvalid = el;
+      });
+      if (firstInvalid) {
+        status.classList.add("is-error");
+        status.textContent = "Confira os campos destacados e tente de novo.";
+        (firstInvalid as HTMLElement).focus();
+        return;
+      }
+
+      const data = Object.fromEntries(new FormData(form));
+      if (data.website) return; // honeypot
+      delete data.website;
+
+      button.disabled = true;
+      try {
+        const res = await fetch(form.dataset.webhook!, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...data, source: form.dataset.source, page: location.href }),
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        status.classList.add("is-success");
+        status.textContent = status.dataset.success!;
+        form.reset();
+        track("form_submit", { form: form.dataset.source });
+      } catch {
+        status.classList.add("is-error");
+        status.textContent = "Não foi possível enviar agora. Tente de novo ou chame no WhatsApp.";
+      } finally {
+        button.disabled = false;
+      }
+    });
+  });
+</script>

@@ -1,0 +1,64 @@
+---
+/**
+ * Página inicial do MODELO. Mostra os componentes base com placeholders.
+ * Em cada projeto, substituir pelo conteúdo do docs/sitemap.md.
+ */
+import Base from "@/layouts/Base.astro";
+import Section from "@/components/Section.astro";
+import Button from "@/components/Button.astro";
+import ContactForm from "@/components/ContactForm.astro";
+import FAQ from "@/components/FAQ.astro";
+import Marquee from "@/components/Marquee.astro";
+import { site } from "@/site.config";
+import { whatsappLink } from "@/lib/links";
+import { faqSchema } from "@/lib/schema";
+
+const faq = [
+  { q: "[PREENCHER: pergunta frequente 1]", a: "[PREENCHER: resposta 1]" },
+  { q: "[PREENCHER: pergunta frequente 2]", a: "[PREENCHER: resposta 2]" },
+];
+const wa = whatsappLink();
+---
+
+<Base title={site.name} schema={faqSchema(faq)}>
+  <section class="hero">
+    <div class="container hero__inner" data-stagger="120">
+      <h1 data-reveal="up">[PREENCHER: título principal com a oferta]</h1>
+      <p class="hero__lead" data-reveal="up">[PREENCHER: subtítulo de uma ou duas linhas]</p>
+      <div class="hero__ctas" data-reveal="up">
+        {wa && <Button href={wa} size="lg" data-track-location="hero">[PREENCHER: CTA principal]</Button>}
+        <Button href="#contato" variant="secondary" size="lg">Enviar mensagem</Button>
+      </div>
+    </div>
+  </section>
+
+  <Marquee items={["[PREENCHER: item 1]", "[PREENCHER: item 2]", "[PREENCHER: item 3]"]} />
+
+  <Section id="exemplo" title="[PREENCHER: título da seção]" intro="[PREENCHER: introdução curta]">
+    <ul class="grid" data-stagger="100">
+      {[1, 2, 3].map((n) => (
+        <li data-reveal="up">
+          <h3>[PREENCHER: item {n}]</h3>
+          <p>[PREENCHER: descrição]</p>
+        </li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section id="perguntas" title="Perguntas frequentes" width="narrow" tone="surface">
+    <FAQ items={faq} />
+  </Section>
+
+  <Section id="contato" title="Contato" width="narrow">
+    <ContactForm />
+  </Section>
+</Base>
+
+<style>
+  .hero { min-height: calc(90dvh - var(--header-h)); display: grid; align-items: center; padding-block: var(--space-16); }
+  .hero__inner { display: grid; gap: var(--space-6); }
+  .hero__lead { font-size: var(--text-xl); color: var(--color-muted); }
+  .hero__ctas { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+  .grid { list-style: none; padding: 0; display: grid; gap: var(--space-8); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .grid h3 { margin-bottom: var(--space-2); }
+</style>

@@ -1,0 +1,36 @@
+---
+interface Props {
+  id?: string;
+  title?: string;
+  intro?: string;
+  tone?: "default" | "surface" | "inverse";
+  width?: "default" | "narrow" | "full";
+  /** Anima título e intro ao entrar na tela */
+  reveal?: boolean;
+  class?: string;
+}
+const { id, title, intro, tone = "default", width = "default", reveal = true, class: cls } = Astro.props;
+const headingId = id && title ? `${id}-titulo` : undefined;
+const containerClass = width === "narrow" ? "container-narrow" : width === "default" ? "container" : "";
+---
+
+<section id={id} class:list={["section", `section--${tone}`, cls]} aria-labelledby={headingId}>
+  <div class={containerClass}>
+    {(title || intro) && (
+      <header class="section__head">
+        {title && <h2 id={headingId} data-reveal={reveal ? "up" : undefined}>{title}</h2>}
+        {intro && <p class="section__intro" data-reveal={reveal ? "up" : undefined} data-reveal-delay="100">{intro}</p>}
+      </header>
+    )}
+    <slot />
+  </div>
+</section>
+
+<style>
+  .section { padding-block: var(--space-section); }
+  .section--surface { background: var(--color-surface); }
+  .section--inverse { background: var(--color-text); color: var(--color-bg); }
+  .section__head { margin-bottom: var(--space-12); display: grid; gap: var(--space-4); }
+  .section__intro { font-size: var(--text-lg); color: var(--color-muted); }
+  .section--inverse .section__intro { color: color-mix(in srgb, var(--color-bg) 75%, transparent); }
+</style>

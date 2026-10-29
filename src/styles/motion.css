@@ -1,0 +1,46 @@
+/*
+ * Motion base. Use com src/scripts/motion.ts:
+ *   data-reveal="up|down|left|right|fade|scale|clip"  entrada ao rolar
+ *   data-reveal-delay="200"                           atraso em ms
+ *   data-stagger="80"   (no pai) atraso escalonado nos filhos com data-reveal
+ *   data-parallax="0.2"                               deslocamento ao rolar
+ *   data-count="120"                                  número que conta até o valor
+ * Tudo é desligado com prefers-reduced-motion.
+ */
+
+/* Transição entre páginas (sem JS, navegadores compatíveis) */
+@view-transition { navigation: auto; }
+::view-transition-old(root),
+::view-transition-new(root) { animation-duration: var(--dur); animation-timing-function: var(--ease-out); }
+
+/* Estados de reveal: só escondem quando o JS está ativo */
+.js [data-reveal] {
+  opacity: 0;
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out),
+    clip-path var(--dur-slow) var(--ease-out);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+.js [data-reveal="up"] { transform: translateY(32px); }
+.js [data-reveal="down"] { transform: translateY(-32px); }
+.js [data-reveal="left"] { transform: translateX(40px); }
+.js [data-reveal="right"] { transform: translateX(-40px); }
+.js [data-reveal="scale"] { transform: scale(0.94); }
+.js [data-reveal="clip"] { opacity: 1; clip-path: inset(100% 0 0 0); }
+.js [data-reveal].is-visible { opacity: 1; transform: none; clip-path: inset(0 0 0 0); }
+
+/* Marquee (faixa rolando) — ver components/Marquee.astro */
+@keyframes marquee { to { transform: translateX(-50%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .js [data-reveal] { opacity: 1; transform: none; clip-path: none; }
+  @view-transition { navigation: none; }
+}

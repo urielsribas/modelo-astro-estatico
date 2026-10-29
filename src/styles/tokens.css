@@ -1,0 +1,61 @@
+/*
+ * Tokens de design. Os valores abaixo são neutros: troque por cliente
+ * (cores, fontes, raio) sem mexer nos componentes.
+ */
+:root {
+  /* Cores */
+  --color-bg: #ffffff;
+  --color-surface: #f3f4f6;
+  --color-text: #1a1d21;
+  --color-muted: #5b6470;
+  --color-primary: #1f4fd1;
+  --color-primary-contrast: #ffffff;
+  --color-accent: #e8a317;
+  --color-border: #d9dde3;
+  --color-success: #1b7f4b;
+  --color-error: #b3261e;
+  --color-whatsapp: #25d366;
+
+  /* Tipografia */
+  --font-display: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Escala modular (1.25) com fluidez entre 360px e 1280px */
+  --text-xs: clamp(0.75rem, 0.73rem + 0.1vw, 0.8rem);
+  --text-sm: clamp(0.875rem, 0.85rem + 0.1vw, 0.94rem);
+  --text-base: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
+  --text-lg: clamp(1.2rem, 1.13rem + 0.3vw, 1.33rem);
+  --text-xl: clamp(1.44rem, 1.3rem + 0.6vw, 1.77rem);
+  --text-2xl: clamp(1.73rem, 1.45rem + 1.2vw, 2.37rem);
+  --text-3xl: clamp(2.07rem, 1.6rem + 2vw, 3.16rem);
+  --text-4xl: clamp(2.49rem, 1.7rem + 3.4vw, 4.21rem);
+
+  --leading-tight: 1.1;
+  --leading-normal: 1.6;
+
+  /* Espaçamento */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-section: clamp(4rem, 3rem + 5vw, 8rem);
+
+  /* Layout */
+  --container: 1200px;
+  --container-narrow: 720px;
+  --gutter: clamp(1rem, 0.6rem + 2vw, 2rem);
+  --radius: 8px;
+  --radius-lg: 16px;
+  --header-h: 72px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 180ms;
+  --dur: 400ms;
+  --dur-slow: 800ms;
+}

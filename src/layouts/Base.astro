@@ -1,0 +1,72 @@
+---
+import "@/styles/global.css";
+import { site } from "@/site.config";
+import Schema from "@/components/Schema.astro";
+import TrackingHead from "@/components/TrackingHead.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import WhatsAppButton from "@/components/WhatsAppButton.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+  noindex?: boolean;
+  /** JSON-LD extra desta página (ex.: FAQPage, Menu) */
+  schema?: Record<string, unknown> | Record<string, unknown>[];
+}
+
+const { title, description = site.description, image = site.ogImage, noindex = false, schema } = Astro.props;
+const isHome = Astro.url.pathname === "/";
+const fullTitle = isHome ? title : `${title} | ${site.name}`;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url).href;
+const ogImage = new URL(image, Astro.site ?? site.url).href;
+---
+
+<!doctype html>
+<html lang={site.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>document.documentElement.classList.add("js");</script>
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content={site.locale} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta name="theme-color" content="#ffffff" />
+
+    <slot name="head" />
+    <Schema extra={schema} />
+    <TrackingHead />
+  </head>
+  <body>
+    <a href="#conteudo" class="skip-link">Pular para o conteúdo</a>
+    <Header />
+    <main id="conteudo">
+      <slot />
+    </main>
+    <Footer />
+    <WhatsAppButton />
+
+    <script>
+      import "@/scripts/motion";
+      import "@/scripts/tracking";
+    </script>
+  </body>
+</html>

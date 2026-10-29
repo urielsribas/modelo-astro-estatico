@@ -1,0 +1,39 @@
+---
+/** Scripts de tracking. Só renderiza o que estiver preenchido em site.config.ts. */
+import { site } from "@/site.config";
+const { gtmId, ga4Id, metaPixelId } = site.tracking;
+---
+
+{gtmId && (
+  <script is:inline define:vars={{ gtmId }}>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});
+    var f=d.getElementsByTagName(s)[0],j=d.createElement(s);j.async=true;
+    j.src='https://www.googletagmanager.com/gtm.js?id='+i+(l!='dataLayer'?'&l='+l:'');
+    f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer',gtmId);
+  </script>
+)}
+
+{!gtmId && ga4Id && (
+  <>
+    <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}></script>
+    <script is:inline define:vars={{ ga4Id }}>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      window.gtag = gtag;
+      gtag('js', new Date());
+      gtag('config', ga4Id);
+    </script>
+  </>
+)}
+
+{metaPixelId && (
+  <script is:inline define:vars={{ metaPixelId }}>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+    document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', metaPixelId);
+    fbq('track', 'PageView');
+  </script>
+)}

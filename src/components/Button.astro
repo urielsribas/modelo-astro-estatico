@@ -1,0 +1,45 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+type Props = Omit<HTMLAttributes<"a">, "type"> & {
+  href?: string;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
+  variant?: "primary" | "secondary" | "ghost";
+  size?: "sm" | "md" | "lg";
+};
+
+const { href, variant = "primary", size = "md", class: cls, ...props } = Astro.props;
+const rest: Record<string, unknown> = props;
+const external = href?.startsWith("http");
+const Tag = href ? "a" : "button";
+---
+
+<Tag
+  href={href}
+  class:list={["btn", `btn--${variant}`, `btn--${size}`, cls]}
+  target={external ? "_blank" : undefined}
+  rel={external ? "noopener" : undefined}
+  {...rest}
+>
+  <slot />
+</Tag>
+
+<style>
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+    min-height: 44px; padding: var(--space-3) var(--space-6);
+    border: 2px solid transparent; border-radius: var(--radius);
+    font-weight: 600; line-height: 1.2; text-decoration: none; white-space: nowrap;
+    transition: background-color var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast), transform var(--dur-fast) var(--ease-out);
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn--sm { min-height: 40px; padding: var(--space-2) var(--space-4); font-size: var(--text-sm); }
+  .btn--lg { min-height: 52px; padding: var(--space-4) var(--space-8); font-size: var(--text-lg); }
+  .btn--primary { background: var(--color-primary); color: var(--color-primary-contrast); }
+  .btn--primary:hover { background: color-mix(in srgb, var(--color-primary) 85%, black); }
+  .btn--secondary { border-color: currentColor; color: var(--color-text); background: transparent; }
+  .btn--secondary:hover { background: var(--color-text); color: var(--color-bg); border-color: var(--color-text); }
+  .btn--ghost { background: transparent; color: var(--color-primary); padding-inline: var(--space-2); }
+  .btn--ghost:hover { text-decoration: underline; }
+</style>

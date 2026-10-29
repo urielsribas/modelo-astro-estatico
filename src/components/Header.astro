@@ -1,0 +1,103 @@
+---
+import { site } from "@/site.config";
+import Button from "@/components/Button.astro";
+import { whatsappLink } from "@/lib/links";
+
+const path = Astro.url.pathname;
+const wa = whatsappLink();
+---
+
+<header class="header" data-header>
+  <div class="container header__inner">
+    <a href="/" class="header__brand" aria-label={`${site.name}, página inicial`}>
+      <slot name="logo">{site.name}</slot>
+    </a>
+
+    <button class="header__toggle" aria-expanded="false" aria-controls="menu-principal" data-menu-toggle>
+      <span class="sr-only">Abrir menu</span>
+      <span class="header__bars" aria-hidden="true"></span>
+    </button>
+
+    <nav id="menu-principal" class="header__nav" aria-label="Principal">
+      <ul>
+        {site.nav.map((item) => (
+          <li><a href={item.href} aria-current={path === item.href ? "page" : undefined}>{item.label}</a></li>
+        ))}
+      </ul>
+      {wa && <Button href={wa} variant="primary" size="sm" data-track-location="header">Fale conosco</Button>}
+    </nav>
+  </div>
+</header>
+
+<style>
+  .header {
+    position: sticky; top: 0; z-index: 50;
+    height: var(--header-h);
+    background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
+  }
+  .header.is-scrolled { border-color: var(--color-border); }
+  .header.is-hidden { transform: translateY(-100%); }
+  .header__inner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+  .header__brand { font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); text-decoration: none; }
+  .header__nav ul { list-style: none; padding: 0; display: flex; gap: var(--space-6); }
+  .header__nav a:not(.btn) { text-decoration: none; font-size: var(--text-sm); }
+  .header__nav a[aria-current="page"] { text-decoration: underline; text-underline-offset: 6px; }
+  .header__toggle { display: none; background: none; border: 0; width: 44px; height: 44px; position: relative; }
+  .header__bars, .header__bars::before, .header__bars::after {
+    position: absolute; left: 10px; width: 24px; height: 2px; background: currentColor;
+    transition: transform var(--dur) var(--ease-out), opacity var(--dur-fast);
+  }
+  .header__bars { top: 21px; }
+  .header__bars::before, .header__bars::after { content: ""; left: 0; }
+  .header__bars::before { top: -7px; }
+  .header__bars::after { top: 7px; }
+  [aria-expanded="true"] .header__bars { background: transparent; }
+  [aria-expanded="true"] .header__bars::before { transform: translateY(7px) rotate(45deg); }
+  [aria-expanded="true"] .header__bars::after { transform: translateY(-7px) rotate(-45deg); }
+
+  .header__nav { display: flex; align-items: center; gap: var(--space-6); }
+
+  @media (max-width: 768px) {
+    .header__toggle { display: block; }
+    .header__nav {
+      position: fixed; inset: var(--header-h) 0 auto 0;
+      flex-direction: column; align-items: stretch; gap: var(--space-6);
+      padding: var(--space-8) var(--gutter);
+      background: var(--color-bg); border-bottom: 1px solid var(--color-border);
+      clip-path: inset(0 0 100% 0); visibility: hidden;
+      transition: clip-path var(--dur) var(--ease-out), visibility 0s linear var(--dur);
+    }
+    .header__nav.is-open { clip-path: inset(0 0 0 0); visibility: visible; transition-delay: 0s; }
+    .header__nav ul { flex-direction: column; gap: var(--space-4); }
+    .header__nav a:not(.btn) { font-size: var(--text-lg); }
+  }
+</style>
+
+<script>
+  const header = document.querySelector<HTMLElement>("[data-header]");
+  const toggle = document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
+  const nav = document.getElementById("menu-principal");
+
+  toggle?.addEventListener("click", () => {
+    const open = toggle.getAttribute("aria-expanded") !== "true";
+    toggle.setAttribute("aria-expanded", String(open));
+    toggle.querySelector(".sr-only")!.textContent = open ? "Fechar menu" : "Abrir menu";
+    nav?.classList.toggle("is-open", open);
+  });
+  nav?.addEventListener("click", (e) => {
+    if ((e.target as HTMLElement).closest("a") && toggle?.getAttribute("aria-expanded") === "true") toggle.click();
+  });
+
+  // Borda ao rolar + esconde ao descer, mostra ao subir
+  let last = 0;
+  window.addEventListener("scroll", () => {
+    const y = window.scrollY;
+    header?.classList.toggle("is-scrolled", y > 8);
+    const menuOpen = toggle?.getAttribute("aria-expanded") === "true";
+    header?.classList.toggle("is-hidden", !menuOpen && y > last && y > 300);
+    last = y;
+  }, { passive: true });
+</script>

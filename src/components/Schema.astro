@@ -1,0 +1,43 @@
+---
+/** JSON-LD do negócio (NAP do Google Business Profile) + schema extra da página. */
+import { site } from "@/site.config";
+
+interface Props { extra?: Record<string, unknown> | Record<string, unknown>[] }
+const { extra } = Astro.props;
+
+const a = site.address;
+const sameAs = Object.values(site.social).filter(Boolean);
+
+const business: Record<string, unknown> = {
+  "@context": "https://schema.org",
+  "@type": site.schemaType,
+  "@id": `${site.url}/#negocio`,
+  name: site.name,
+  url: site.url,
+  description: site.description,
+  image: new URL(site.ogImage, site.url).href,
+  ...(site.contact.phone && { telephone: site.contact.phone }),
+  ...(site.contact.email && { email: site.contact.email }),
+  ...(a.street && {
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: a.street,
+      addressLocality: a.city,
+      addressRegion: a.state,
+      postalCode: a.postalCode,
+      addressCountry: a.country,
+    },
+  }),
+  ...(site.geo.lat !== null && site.geo.lng !== null && {
+    geo: { "@type": "GeoCoordinates", latitude: site.geo.lat, longitude: site.geo.lng },
+  }),
+  ...(site.mapsUrl && { hasMap: site.mapsUrl }),
+  ...(site.openingHours.length && { openingHours: site.openingHours }),
+  ...(site.priceRange && { priceRange: site.priceRange }),
+  ...(sameAs.length && { sameAs }),
+};
+
+const blocks = [business, ...(extra ? (Array.isArray(extra) ? extra : [extra]) : [])];
+---
+
+{blocks.map((b) => <script type="application/ld+json" set:html={JSON.stringify(b)} />)}

@@ -3,6 +3,15 @@ import { site } from "@/site.config";
 import Button from "@/components/Button.astro";
 import { whatsappLink } from "@/lib/links";
 
+interface NavItem { label: string; href: string; target?: string | null }
+interface Props {
+  /** Itens do menu. Padrão: site.nav. No Modo B vem do menu "primary" do EmDash. */
+  items?: NavItem[];
+  /** Logo opcional (no Modo B vem das configurações do EmDash) */
+  logo?: { url?: string; alt?: string } | null;
+}
+const { logo } = Astro.props;
+const items: NavItem[] = Astro.props.items ?? site.nav;
 const path = Astro.url.pathname;
 const wa = whatsappLink();
 ---
@@ -10,7 +19,7 @@ const wa = whatsappLink();
 <header class="header" data-header>
   <div class="container header__inner">
     <a href="/" class="header__brand" aria-label={`${site.name}, página inicial`}>
-      <slot name="logo">{site.name}</slot>
+      {logo?.url ? <img src={logo.url} alt={logo.alt || site.name} height="40" /> : site.name}
     </a>
 
     <button class="header__toggle" aria-expanded="false" aria-controls="menu-principal" data-menu-toggle>
@@ -20,8 +29,15 @@ const wa = whatsappLink();
 
     <nav id="menu-principal" class="header__nav" aria-label="Principal">
       <ul>
-        {site.nav.map((item) => (
-          <li><a href={item.href} aria-current={path === item.href ? "page" : undefined}>{item.label}</a></li>
+        {items.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              target={item.target ?? undefined}
+              rel={item.target === "_blank" ? "noopener" : undefined}
+              aria-current={path === item.href ? "page" : undefined}
+            >{item.label}</a>
+          </li>
         ))}
       </ul>
       {wa && <Button href={wa} variant="primary" size="sm" data-track-location="header">Fale conosco</Button>}
@@ -41,6 +57,7 @@ const wa = whatsappLink();
   .header.is-scrolled { border-color: var(--color-border); }
   .header.is-hidden { transform: translateY(-100%); }
   .header__inner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+  .header__brand img { height: 40px; width: auto; }
   .header__brand { font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); text-decoration: none; }
   .header__nav ul { list-style: none; padding: 0; display: flex; gap: var(--space-6); }
   .header__nav a:not(.btn) { text-decoration: none; font-size: var(--text-sm); }
